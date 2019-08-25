@@ -11,7 +11,7 @@ namespace Hexic.Elements
             GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
 
         }
-        public void OnReuse()
+        public virtual void OnReuse()
         {
             gameObject.SetActive(true);
         }

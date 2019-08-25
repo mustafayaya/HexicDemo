@@ -149,7 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039f71cbea45a460788f8c79e48f5bae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cellPool: []
 --- !u!4 &656098106
 Transform:
   m_ObjectHideFlags: 0
@@ -228,7 +227,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &826237660
 GameObject:
@@ -394,7 +393,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &982691341
 GameObject:
@@ -428,7 +427,7 @@ RectTransform:
   m_Children:
   - {fileID: 826237661}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -504,9 +503,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1404393497}
+  - component: {fileID: 1404393499}
+  - component: {fileID: 1404393498}
   - component: {fileID: 1404393496}
   m_Layer: 0
-  m_Name: GameController
+  m_Name: ControllerBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -521,23 +522,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1404393495}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 803860734e16346af9b319b878caa9d9, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c922ef4098ef6949b087477dcc72b17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 8, y: 8}
-  cellPrefab: {fileID: 6951733531808550773, guid: f93ab80145ef84502ac83690488dc055,
-    type: 3}
-  gridRectTransform: {fileID: 826237661}
-  rectOffset: {x: 0, y: 0, z: 0}
-  objectPool: {fileID: 656098105}
-  cellSize: {x: 69.6, y: 60}
-  hexagonTypes:
-  - cellSize: {x: 0, y: 0}
-    displayImage: {fileID: 0}
-    color: {r: 0, g: 0, b: 0, a: 0}
-  - cellSize: {x: 0, y: 0}
-    displayImage: {fileID: 0}
-    color: {r: 0, g: 0, b: 0, a: 0}
+  gameController: {fileID: 0}
+  poolController: {fileID: 0}
 --- !u!4 &1404393497
 Transform:
   m_ObjectHideFlags: 0
@@ -550,8 +539,56 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1404393498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404393495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2240e9997d46d148ae18a88f1b24500, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1404393499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404393495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33bb18ddc6e63e14fb16745827db2c90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridSize: {x: 8, y: 9}
+  cellSpacing: 3
+  hexagonPrefab: {fileID: 8165954738589439940, guid: a730730ba0a8749468706e90c69088ac,
+    type: 3}
+  gridRectTransform: {fileID: 826237661}
+  rectOffset: {x: 0, y: 0, z: 0}
+  cellSize: {x: 58, y: 50}
+  hexagonTypes:
+  - cellSize: {x: 0, y: 0}
+    displayImage: {fileID: 0}
+    color: {r: 0.33490568, g: 0.7282974, b: 1, a: 1}
+  - cellSize: {x: 0, y: 0}
+    displayImage: {fileID: 0}
+    color: {r: 1, g: 0.75744486, b: 0.18396229, a: 1}
+  - cellSize: {x: 0, y: 0}
+    displayImage: {fileID: 0}
+    color: {r: 0.5594504, g: 0.8018868, b: 0.3215112, a: 1}
+  - cellSize: {x: 0, y: 0}
+    displayImage: {fileID: 0}
+    color: {r: 0.7578794, g: 0.41424885, b: 0.8207547, a: 1}
+  - cellSize: {x: 0, y: 0}
+    displayImage: {fileID: 0}
+    color: {r: 0.8301887, g: 0.3307052, b: 0.26237094, a: 1}
+  animationWaitTime: 0
 --- !u!1 &1870931312
 GameObject:
   m_ObjectHideFlags: 0
@@ -633,5 +670,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

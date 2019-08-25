@@ -1,3 +1,6 @@
 /.vs
 *.csproj
 *.lock
+/Library
+/Temp
+\Temp

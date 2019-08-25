@@ -20,18 +20,7 @@ namespace Hexic.Runtime
                 _instance = FindObjectOfType<GameController>();
             }
         }
-        public static ControllerBase controllerBase //Singleton here
-        {
-            get
-            {
-
-                return FindObjectOfType<ControllerBase>();
-            }
-            set
-            {
-                controllerBase = FindObjectOfType<ControllerBase>();
-            }
-        }
+        
         [Header("Setup")]
         public Vector2 gridSize;
         public float cellSpacing;
@@ -49,7 +38,7 @@ namespace Hexic.Runtime
 
         private void Start()
         {
-            controllerBase.poolController.PoolCells(cellSize);
+            PoolController._instance.PoolCells(cellSize);
             StartCoroutine(Draw());
         }
         void Update()
@@ -103,7 +92,7 @@ namespace Hexic.Runtime
         {
             Color randomHexagonColor = hexagonTypes[Random.Range(0,hexagonTypes.Count)].color;
             
-            return controllerBase.poolController.ReuseHexagon(randomHexagonColor);
+            return PoolController._instance.ReuseHexagon(randomHexagonColor);
             
         }
 

@@ -30,16 +30,15 @@ public class PoolController : MonoBehaviour
         public Dictionary<CellType, Queue<Cell>> cellPool = new Dictionary<CellType, Queue<Cell>>();
 
 
-        public void PoolCells(Vector2 _cellSize)
+        public void PoolCells(Vector2 _cellSize) //Initialize pooling here at the start of the game
         {
-            var gameControllerInstance = GameController._instance;
             
             if (cellPool.ContainsKey(CellType.Hexagon))
             {
                 var queue = cellPool[CellType.Hexagon];
-                for (int i = 0; i < gameControllerInstance.gridSize.x * gameControllerInstance.gridSize.y + gameControllerInstance.gridSize.x; i++) //Grid'deki toplam hücre sayısı kadar + bir rowdaki yatay hücre sayısı kadar hücre poolla
+                for (int i = 0; i < GridController._instance.gridSize.x * GridController._instance.gridSize.y + GridController._instance.gridSize.x; i++) //Grid'deki toplam hücre sayısı kadar + bir rowdaki yatay hücre sayısı kadar hücre poolla
                 {
-                    GameObject go = (GameObject)GameObject.Instantiate(gameControllerInstance.hexagonPrefab, gameControllerInstance.gridRectTransform.transform);
+                    GameObject go = (GameObject)GameObject.Instantiate(GridController._instance.hexagonPrefab, GridController._instance.gridRectTransform.transform);
                     var _cell = go.GetComponent<Hexagon>();
                     queue.Enqueue(_cell);
                     _cell.SetSize(_cellSize);

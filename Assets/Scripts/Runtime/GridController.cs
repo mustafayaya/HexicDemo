@@ -51,10 +51,11 @@ namespace Hexic.Runtime
                 for (int j = 0; j < gridSize.x; j++)
                 {
 
-                    var _cell = ReuseHexagon();
+                    var _cell = InitializeHexagon(new Vector2(i, j));
 
 
-                    InstertCellToGrid(new Vector2(j, i), _cell);
+                    InstertCellToGrid(new Vector2(i, j), _cell);
+
                     yield return wait;//Wait for initialization effect
 
                 }
@@ -63,7 +64,7 @@ namespace Hexic.Runtime
 
         void InstertCellToGrid(Vector2 gridCell, Cell cell)
         {
-            var gridWidth = (gridSize.x - 1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
+            var gridWidth = (gridSize.x ) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
             var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing;
 
             Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
@@ -81,10 +82,68 @@ namespace Hexic.Runtime
             gridCellData.Add(gridCell, cell);
         }
 
+        List<List<Vector2>> evenQueryVectors = new List<List<Vector2>>() {
+            new List<Vector2>(){new Vector2(1, 0),new Vector2(1, 1)},
+            new List<Vector2>(){new Vector2(0, 1),new Vector2(1, 1)},
+            new List<Vector2>(){new Vector2(0, 1),new Vector2(-1, 1)},
+            new List<Vector2>(){new Vector2(-1, 0),new Vector2(-1, 1) },
+            new List<Vector2>(){new Vector2(-1, 0),new Vector2(0, -1) },
+            new List<Vector2>(){new Vector2(0,-1),new Vector2(1, 0) }
+        };
+        List<List<Vector2>> oddQueryVectors = new List<List<Vector2>>() {
+            new List<Vector2>(){new Vector2(0,-1),new Vector2(1, -1) },
+            new List<Vector2>(){new Vector2(1, 0),new Vector2(1, -1) },
+            new List<Vector2>(){new Vector2(1,0),new Vector2(0,1)},
+            new List<Vector2>(){new Vector2(0, 1),new Vector2(-1,0)},
+            new List<Vector2>(){new Vector2(-1, 0),new Vector2(-1, -1) },
+            new List<Vector2>(){new Vector2(-1, -1),new Vector2(0, -1) },
+        };
 
-        private Hexagon ReuseHexagon()
+        Hexagon InitializeHexagon(Vector2 gridCoordinates)
         {
-            Color randomHexagonColor = GameController._instance.hexagonTypes[Random.Range(0, GameController._instance.hexagonTypes.Count)].color;
+
+            List<Color> availableColors = new List<Color>();
+            List<List<Vector2>> queryVectors;
+            foreach (HexagonModel model in GameController._instance.hexagonTypes) { //Initialize available color list
+                availableColors.Add(model.color);
+            }
+
+            for (int i = 0; i < GameController._instance.hexagonTypes.Count; i++)
+            {
+
+                if (gridCoordinates.x % 2 == 0) //if it is even
+                {
+                    queryVectors = evenQueryVectors;
+                }
+                else
+                {
+                    queryVectors = oddQueryVectors;
+
+                }
+
+                foreach (List<Vector2> vectors in queryVectors)
+                {
+                    if (gridCellData.ContainsKey(gridCoordinates + vectors[0]) && gridCellData.ContainsKey(gridCoordinates + vectors[1]))
+                    {
+                        if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == GameController._instance.hexagonTypes[i].color)
+                        {
+                            foreach (Vector2 v in vectors)
+                            {
+                                Debug.Log(v);
+
+                            }
+
+                            availableColors.Remove(GameController._instance.hexagonTypes[i].color);
+                            continue;
+                        }
+                    }
+
+                }
+                
+            }
+           
+
+            Color randomHexagonColor = availableColors[Random.Range(0, availableColors.Count)];
 
             return PoolController._instance.ReuseHexagon(randomHexagonColor);
 

@@ -38,63 +38,15 @@ namespace Hexic.Runtime
 
         private void Start()
         {
-            PoolController._instance.PoolCells(cellSize);
-            StartCoroutine(Draw());
+            GridController._instance.InitializeGrid();
         }
         void Update()
         {
 
         }
         float counter;
-        
-        private IEnumerator Draw() //Draw game area
-        {
+ 
 
-            WaitForSeconds wait = new WaitForSeconds(animationWaitTime);
-
-            for (int i = 0; i < gridSize.y;i++ )
-            {
-                for (int j = 0; j < gridSize.x;j++ )
-                {
-                 
-                    var _cell = ReuseHexagon();
-
-
-                    InstertCellToGrid(new Vector2(j, i), _cell);
-                    yield return wait;
-
-                }
-            }
-        }
-
-        void InstertCellToGrid(Vector2 gridCell,Cell cell)
-        {
-            var gridWidth = (gridSize.x - 1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 should use for drawing hexagon pattern
-            var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing; // 3/4 should use for drawing hexagon pattern
-
-            Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
-            if (gridCell.x % 2 == 0)
-            {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing) - cellSize.y / 2);
-            }
-            else
-            {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing));
-
-            }
-
-            gridCellData.Remove(gridCell);
-            gridCellData.Add(gridCell, cell);
-        }
-
-
-        private Hexagon ReuseHexagon()
-        {
-            Color randomHexagonColor = hexagonTypes[Random.Range(0,hexagonTypes.Count)].color;
-            
-            return PoolController._instance.ReuseHexagon(randomHexagonColor);
-            
-        }
 
     }
     

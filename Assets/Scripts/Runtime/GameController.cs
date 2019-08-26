@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Hexic.Models;
 using Hexic.Elements;
+using UnityEngine.UI;
 
 namespace Hexic.Runtime
 {
@@ -21,33 +22,85 @@ namespace Hexic.Runtime
             }
         }
         
-        [Header("Setup")]
-        public Vector2 gridSize;
-        public float cellSpacing;
-        public Object hexagonPrefab;
-        public RectTransform gridRectTransform;
-        public Vector3 rectOffset;
-
 
         [Header("Game Settings")]
-        public Vector2 cellSize = new Vector2(50, 43); //Cell size of explodables like hexagon, bomb etc...
         public List<HexagonModel> hexagonTypes = new List<HexagonModel>(); //Add hexagon types here
         public float animationWaitTime;
-        [Header("Runtime")]
-        Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
+        public Image trioCursorImage;
 
+        [Header("Runtime")]
+        HexagonTrio selectedHexagonTrio;
+        public bool interactable = false; //Set this false while initializing, calculating matches etc.
         private void Start()
         {
             GridController._instance.InitializeGrid();
         }
         void Update()
         {
+            if (interactable)
+            {
+                HexagonSelectionHandler();
+                SwipeHandler();
+
+            }
+
 
         }
-        float counter;
- 
+
+        void HexagonSelectionHandler()
+        {
+            Vector3 touchedPosition ;
+
+            if (InputController._instance.GetScreenTouch(out touchedPosition))
+            {
+               
+                selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x,touchedPosition.y));
+
+                trioCursorImage.transform.position = selectedHexagonTrio.center;
+            }
+
+            
+        }
+
+        HexagonTrio GetClosestHexagonTrio(Vector2 position)
+        {
+            CellInputQuery cellInputQuery = new CellInputQuery();
+
+            foreach (HexagonTrio trio in GridController._instance.HexagonTrios)
+            {
+                var _distance = Vector3.Distance(new Vector2(position.x, position.y), trio.center);
+                if (_distance < cellInputQuery.distance || cellInputQuery.distance == 0)
+                {
+                    cellInputQuery.distance = _distance;
+                    cellInputQuery.hexagonTrio = trio;
+
+                }
+            }
+
+            return cellInputQuery.hexagonTrio;
+        }
 
 
+        void SwipeHandler()
+        {
+            if (selectedHexagonTrio != null)
+            {
+                if (InputController._instance.GetScreenSwipe() != InputController.SwipeType.None)
+                {
+
+                }
+            }
+        }
+
+       
+
+        struct CellInputQuery
+        {
+            public float distance ;
+            public HexagonTrio hexagonTrio;
+
+
+        }
     }
     
 }

@@ -11,6 +11,8 @@ namespace Hexic.Elements
     {
         public Color color;
 
+        public Vector2 gridCoordinates;
+
         public override void OnReuse()
         {
             base.OnReuse();

@@ -59,10 +59,12 @@
      <Compile Include="Assets\Scripts\Elements\Hexagon.cs" />
      <Compile Include="Assets\Scripts\Interfaces\IReusable.cs" />
      <Compile Include="Assets\Scripts\Models\CellModel.cs" />
+     <Compile Include="Assets\Scripts\Models\HexagonGroup.cs" />
      <Compile Include="Assets\Scripts\Models\HexagonModel.cs" />
      <Compile Include="Assets\Scripts\Models\InteractableModel.cs" />
      <Compile Include="Assets\Scripts\Runtime\GameController.cs" />
      <Compile Include="Assets\Scripts\Runtime\GridController.cs" />
+     <Compile Include="Assets\Scripts\Runtime\InputController.cs" />
      <Compile Include="Assets\Scripts\Runtime\PoolController.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Mustafa/Documents/Projects/VertigoHexic/HexicDemo/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>

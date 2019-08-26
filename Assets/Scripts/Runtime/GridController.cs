@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Hexic.Models;
 using Hexic.Elements;
-
+using UnityEngine.UI;
 
 namespace Hexic.Runtime
 {
@@ -32,7 +32,7 @@ namespace Hexic.Runtime
 
         Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
 
-
+        bool gridInitialized;
     
 
         public void InitializeGrid()
@@ -46,17 +46,58 @@ namespace Hexic.Runtime
 
             WaitForSeconds wait = new WaitForSeconds(GameController._instance.animationWaitTime); 
 
-            for (int i = 0; i < gridSize.y; i++)
+
+
+            for (int i = 0; i < gridSize.x; i++)//Initialize cells
             {
-                for (int j = 0; j < gridSize.x; j++)
+                for (int j = 0; j < gridSize.y; j++)
                 {
 
                     var _cell = InitializeHexagon(new Vector2(i, j));
 
 
                     InstertCellToGrid(new Vector2(i, j), _cell);
-
+                    if (i == gridSize.x - 1 && j == gridSize.y - 1)
+                    {
+                        InitializeHexagonTrios();
+                        GridInitialized();
+                    }
                     yield return wait;//Wait for initialization effect
+                   
+                }
+            }
+
+           
+
+        }
+
+        public void GridInitialized()
+        {
+            GameController._instance.interactable = true;
+            gridInitialized = true;
+        }
+
+        public List<HexagonTrio> HexagonTrios = new List<HexagonTrio>();
+
+        public Image uiImage;
+        void InitializeHexagonTrios()
+        {
+            for (int x = 0; x < gridSize.x - 1; x++)//Initialize trios
+            {
+
+                for (int y = 0; y < gridSize.y - 1; y++)
+                {
+                    if (x%2 ==0)
+                    {
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x, y + 1)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+                    }
+                    else
+                    {
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x, y + 1)], (Hexagon)gridCellData[new Vector2(x + 1, y )]));
+                    }
+                   
 
                 }
             }
@@ -64,7 +105,7 @@ namespace Hexic.Runtime
 
         void InstertCellToGrid(Vector2 gridCell, Cell cell)
         {
-            var gridWidth = (gridSize.x ) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
+            var gridWidth = (gridSize.x -1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
             var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing;
 
             Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
@@ -99,7 +140,8 @@ namespace Hexic.Runtime
             new List<Vector2>(){new Vector2(-1, -1),new Vector2(0, -1) },
         };
 
-        Hexagon InitializeHexagon(Vector2 gridCoordinates)
+
+       Hexagon InitializeHexagon(Vector2 gridCoordinates)
         {
 
             List<Color> availableColors = new List<Color>();
@@ -145,9 +187,11 @@ namespace Hexic.Runtime
 
             Color randomHexagonColor = availableColors[Random.Range(0, availableColors.Count)];
 
-            return PoolController._instance.ReuseHexagon(randomHexagonColor);
+            return PoolController._instance.ReuseHexagon(randomHexagonColor,gridCoordinates);
 
         }
+
+       
 
     }
 }

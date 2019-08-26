@@ -56,7 +56,7 @@ public class PoolController : MonoBehaviour
         }
 
 
-        public Hexagon ReuseHexagon(Color color)
+        public Hexagon ReuseHexagon(Color color, Vector2 _gridCoordinates)
         {
 
                     var _hex = (Hexagon)cellPool[CellType.Hexagon].Dequeue();

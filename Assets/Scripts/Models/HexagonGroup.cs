@@ -20,6 +20,7 @@ namespace Hexic.Models
         public Vector2 h2GridCoordinates;
         public Vector2 h3GridCoordinates;
 
+        public bool turnTrigger;
 
         public Vector2 center;
 
@@ -37,10 +38,43 @@ namespace Hexic.Models
             center = equilibrium1+((h3.transform.position - equilibrium1 ) / 2);
         }
 
-       public IEnumerator TurnClockwise() //Turns clockwise 1 unit
+        public bool CheckMatch()
         {
+            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
+            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
+            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+
+            if (_h1.color == _h2.color && _h1.color == h3.color && _h2.color == _h3.color)
+            {
+                _h1.image.color = Color.grey;
+                _h2.image.color = Color.grey;
+                _h3.image.color = Color.grey;
+
+                return true;
+            }
+            return false;
+        }
+
+        public bool DequeueTrios()
+        {
+            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
+            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
+            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+
+            _h1.OnExplode();
+            _h2.OnExplode();
+            _h3.OnExplode();
+
+
+            return true;
+        }
+
+        public IEnumerator TurnClockwise() //Turns clockwise 1 unit
+        {
+            turnTrigger = false;
+
             var elapsedTime = 0f;
-        
+
             var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
             var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
             var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
@@ -54,14 +88,13 @@ namespace Hexic.Models
             var startingPos3 = _h3.transform.position;
             while (elapsedTime < 2)
             {
-                Debug.Log(elapsedTime);
 
                 _h1.transform.position = Vector3.Lerp(startingPos, startingPos2, (elapsedTime / 2));//Turn cells
                 _h2.transform.position = Vector3.Lerp(startingPos2, startingPos3, (elapsedTime / 2));
                 _h3.transform.position = Vector3.Lerp(startingPos3, startingPos, (elapsedTime / 2));
 
                 elapsedTime +=  GameController._instance.swipeAnimationSpeed* Time.deltaTime;
-                yield return new WaitForSeconds(0.05f);
+                yield return new WaitForSeconds(0.01f);
             }
 
             _h1.transform.position = startingPos2;
@@ -71,6 +104,7 @@ namespace Hexic.Models
             GridController._instance.InsertCellToGrid(h1GridCoordinates, _h3);//Insert new states to grid data
             GridController._instance.InsertCellToGrid(h2GridCoordinates, _h1);
             GridController._instance.InsertCellToGrid(h3GridCoordinates, _h2);
+            turnTrigger = true;
             _h1.interactable = true;
             _h2.interactable = true;
             _h3.interactable = true;

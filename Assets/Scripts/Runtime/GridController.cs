@@ -196,6 +196,29 @@ namespace Hexic.Runtime
 
         }
 
+        public bool MatchingQuery()//Check grid for color matches
+        {
+            List<HexagonTrio> matchedTrios = new List<HexagonTrio>();
+
+            foreach (HexagonTrio hexagonTrio in HexagonTrios)
+            {
+                if (hexagonTrio.CheckMatch())
+                {
+                    matchedTrios.Add(hexagonTrio);
+                }
+                    
+            }
+
+            if (matchedTrios.Count != 0)
+            {
+
+               matchedTrios[0].DequeueTrios();
+                return true;
+            }
+
+            return false;
+        }
+
        
 
     }

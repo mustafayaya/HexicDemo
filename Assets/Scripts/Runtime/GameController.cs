@@ -26,7 +26,7 @@ namespace Hexic.Runtime
         [Header("Game Settings")]
         public List<HexagonModel> hexagonTypes = new List<HexagonModel>(); //Add hexagon types here
         public float animationWaitTime;
-        public float swipeAnimationSpeed = 20f;
+        public float swipeAnimationSpeed = 10f;
 
         public Image trioCursorImage;
 
@@ -82,6 +82,7 @@ namespace Hexic.Runtime
             return cellInputQuery.hexagonTrio;
         }
 
+        Coroutine lastMatchCoroutine = null;
 
         void SwipeHandler()
         {
@@ -92,21 +93,55 @@ namespace Hexic.Runtime
                 {
                     if (swipeType == InputController.SwipeType.Up)//Turn trio clockwise
                     {
-                        TurnHexagonTrioClockwise(selectedHexagonTrio);
+                        lastMatchCoroutine = StartCoroutine(TryToMatch(true,selectedHexagonTrio));
                     }
                 }
             }
         }
 
-        void TurnHexagonTrioClockwise(HexagonTrio selectedHexagonTrio)
+        
+
+        IEnumerator TryToMatch(bool clockwise,HexagonTrio selectedHexagonTrio) 
         {
+            if (clockwise)
+            {
 
-                StartCoroutine(selectedHexagonTrio.TurnClockwise());
+                StartCoroutine(selectedHexagonTrio.TurnClockwise());//First turn
+               
+                yield return new WaitWhile(() =>!selectedHexagonTrio.turnTrigger);
+               
+                if (GridController._instance.MatchingQuery())
+                {
+                    Debug.Log(GridController._instance.MatchingQuery());
 
+                    StopCoroutine(lastMatchCoroutine);
+                }
+                else
+                {
+                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+
+                }
+
+                yield return new WaitWhile(() => !selectedHexagonTrio.turnTrigger);
+                if (GridController._instance.MatchingQuery())
+                {
+                    Debug.Log(GridController._instance.MatchingQuery());
+
+                    StopCoroutine(lastMatchCoroutine);
+                }
+                else
+                {
+                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+
+                }
+
+
+            }
         }
+
+
         public void HexagonTrioTurnOneUnit()
         {
-            
 
         }
 

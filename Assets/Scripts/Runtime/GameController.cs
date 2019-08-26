@@ -26,6 +26,8 @@ namespace Hexic.Runtime
         [Header("Game Settings")]
         public List<HexagonModel> hexagonTypes = new List<HexagonModel>(); //Add hexagon types here
         public float animationWaitTime;
+        public float swipeAnimationSpeed = 20f;
+
         public Image trioCursorImage;
 
         [Header("Runtime")]
@@ -85,14 +87,29 @@ namespace Hexic.Runtime
         {
             if (selectedHexagonTrio != null)
             {
-                if (InputController._instance.GetScreenSwipe() != InputController.SwipeType.None)
+                var swipeType = InputController._instance.GetScreenSwipe();
+                if (swipeType != InputController.SwipeType.None)
                 {
-
+                    if (swipeType == InputController.SwipeType.Up)//Turn trio clockwise
+                    {
+                        TurnHexagonTrioClockwise(selectedHexagonTrio);
+                    }
                 }
             }
         }
 
-       
+        void TurnHexagonTrioClockwise(HexagonTrio selectedHexagonTrio)
+        {
+
+                StartCoroutine(selectedHexagonTrio.TurnClockwise());
+
+        }
+        public void HexagonTrioTurnOneUnit()
+        {
+            
+
+        }
+
 
         struct CellInputQuery
         {

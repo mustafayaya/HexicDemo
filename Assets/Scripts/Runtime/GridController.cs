@@ -30,7 +30,7 @@ namespace Hexic.Runtime
         public RectTransform gridRectTransform;
         public Vector3 rectOffset;
 
-        Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
+        public Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
 
         bool gridInitialized;
     
@@ -56,7 +56,7 @@ namespace Hexic.Runtime
                     var _cell = InitializeHexagon(new Vector2(i, j));
 
 
-                    InstertCellToGrid(new Vector2(i, j), _cell);
+                    InsertCellToGrid(new Vector2(i, j), _cell);
                     if (i == gridSize.x - 1 && j == gridSize.y - 1)
                     {
                         InitializeHexagonTrios();
@@ -94,7 +94,11 @@ namespace Hexic.Runtime
                     }
                     else
                     {
-                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+                        if (y != 0)//if it is not at the top level
+                        {
+                            HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y - 1)]));
+
+                        }
                         HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x, y + 1)], (Hexagon)gridCellData[new Vector2(x + 1, y )]));
                     }
                    
@@ -103,11 +107,10 @@ namespace Hexic.Runtime
             }
         }
 
-        void InstertCellToGrid(Vector2 gridCell, Cell cell)
+        public void InsertCellToGrid(Vector2 gridCell, Cell cell)
         {
             var gridWidth = (gridSize.x -1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
             var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing;
-
             Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
             if (gridCell.x % 2 == 0)
             {
@@ -121,6 +124,8 @@ namespace Hexic.Runtime
 
             gridCellData.Remove(gridCell);
             gridCellData.Add(gridCell, cell);
+            cell.gridCoordinates = gridCell;
+
         }
 
         List<List<Vector2>> evenQueryVectors = new List<List<Vector2>>() {

@@ -5,6 +5,8 @@ namespace Hexic.Elements
 {
     public class Cell : Button, IReusable
     {
+        public Vector2 gridCoordinates;
+
         public void SetSize(Vector2 size)
         {
             GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,size.x);

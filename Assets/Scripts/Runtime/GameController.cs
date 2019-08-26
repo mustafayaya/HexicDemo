@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Hexic.Models;
 using Hexic.Elements;
+using UnityEngine.UI;
 
 namespace Hexic.Runtime
 {
@@ -20,93 +21,138 @@ namespace Hexic.Runtime
                 _instance = FindObjectOfType<GameController>();
             }
         }
-        public static ControllerBase controllerBase //Singleton here
-        {
-            get
-            {
-
-                return FindObjectOfType<ControllerBase>();
-            }
-            set
-            {
-                controllerBase = FindObjectOfType<ControllerBase>();
-            }
-        }
-        [Header("Setup")]
-        public Vector2 gridSize;
-        public float cellSpacing;
-        public Object hexagonPrefab;
-        public RectTransform gridRectTransform;
-        public Vector3 rectOffset;
-
+        
 
         [Header("Game Settings")]
-        public Vector2 cellSize = new Vector2(50, 43); //Cell size of explodables like hexagon, bomb etc...
         public List<HexagonModel> hexagonTypes = new List<HexagonModel>(); //Add hexagon types here
         public float animationWaitTime;
-        [Header("Runtime")]
-        Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
+        public float swipeAnimationSpeed = 10f;
 
+        public Image trioCursorImage;
+
+        [Header("Runtime")]
+        HexagonTrio selectedHexagonTrio;
+        public bool interactable = false; //Set this false while initializing, calculating matches etc.
         private void Start()
         {
-            controllerBase.poolController.PoolCells(cellSize);
-            StartCoroutine(Draw());
+            GridController._instance.InitializeGrid();
         }
         void Update()
         {
+            if (interactable)
+            {
+                HexagonSelectionHandler();
+                SwipeHandler();
+
+            }
+
 
         }
-        float counter;
-        
-        private IEnumerator Draw() //Draw game area
+
+        void HexagonSelectionHandler()
         {
+            Vector3 touchedPosition ;
 
-            WaitForSeconds wait = new WaitForSeconds(animationWaitTime);
-
-            for (int i = 0; i < gridSize.y;i++ )
+            if (InputController._instance.GetScreenTouch(out touchedPosition))
             {
-                for (int j = 0; j < gridSize.x;j++ )
+               
+                selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x,touchedPosition.y));
+
+                trioCursorImage.transform.position = selectedHexagonTrio.center;
+            }
+
+            
+        }
+
+        HexagonTrio GetClosestHexagonTrio(Vector2 position)
+        {
+            CellInputQuery cellInputQuery = new CellInputQuery();
+
+            foreach (HexagonTrio trio in GridController._instance.HexagonTrios)
+            {
+                var _distance = Vector3.Distance(new Vector2(position.x, position.y), trio.center);
+                if (_distance < cellInputQuery.distance || cellInputQuery.distance == 0)
                 {
-                 
-                    var _cell = ReuseHexagon();
+                    cellInputQuery.distance = _distance;
+                    cellInputQuery.hexagonTrio = trio;
 
+                }
+            }
 
-                    InstertCellToGrid(new Vector2(j, i), _cell);
-                    yield return wait;
+            return cellInputQuery.hexagonTrio;
+        }
 
+        Coroutine lastMatchCoroutine = null;
+
+        void SwipeHandler()
+        {
+            if (selectedHexagonTrio != null)
+            {
+                var swipeType = InputController._instance.GetScreenSwipe();
+                if (swipeType != InputController.SwipeType.None)
+                {
+                    if (swipeType == InputController.SwipeType.Up)//Turn trio clockwise
+                    {
+                        lastMatchCoroutine = StartCoroutine(TryToMatch(true,selectedHexagonTrio));
+                    }
                 }
             }
         }
 
-        void InstertCellToGrid(Vector2 gridCell,Cell cell)
+        
+
+        IEnumerator TryToMatch(bool clockwise,HexagonTrio selectedHexagonTrio) 
         {
-            var gridWidth = (gridSize.x - 1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 should use for drawing hexagon pattern
-            var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing; // 3/4 should use for drawing hexagon pattern
-
-            Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
-            if (gridCell.x % 2 == 0)
+            if (clockwise)
             {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing) - cellSize.y / 2);
-            }
-            else
-            {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing));
+
+                StartCoroutine(selectedHexagonTrio.TurnClockwise());//First turn
+               
+                yield return new WaitWhile(() =>!selectedHexagonTrio.turnTrigger);
+               
+                if (GridController._instance.MatchingQuery())
+                {
+                    Debug.Log(GridController._instance.MatchingQuery());
+
+                    StopCoroutine(lastMatchCoroutine);
+                }
+                else
+                {
+                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+
+                }
+
+                yield return new WaitWhile(() => !selectedHexagonTrio.turnTrigger);
+                if (GridController._instance.MatchingQuery())
+                {
+                    Debug.Log(GridController._instance.MatchingQuery());
+
+                    StopCoroutine(lastMatchCoroutine);
+                }
+                else
+                {
+                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+
+                }
+
 
             }
-
-            gridCellData.Remove(gridCell);
-            gridCellData.Add(gridCell, cell);
         }
 
 
-        private Hexagon ReuseHexagon()
+        public void HexagonTrioTurnOneUnit()
         {
-            Color randomHexagonColor = hexagonTypes[Random.Range(0,hexagonTypes.Count)].color;
-            
-            return controllerBase.poolController.ReuseHexagon(randomHexagonColor);
-            
+
         }
 
+
+        struct CellInputQuery
+        {
+            public float distance ;
+            public HexagonTrio hexagonTrio;
+
+
+        }
     }
     
 }

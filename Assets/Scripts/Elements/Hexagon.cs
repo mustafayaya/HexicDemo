@@ -11,12 +11,17 @@ namespace Hexic.Elements
     {
         public Color color;
 
+
         public override void OnReuse()
         {
             base.OnReuse();
             var colorblock = colors;
             
             colors = new UnityEngine.UI.ColorBlock() { normalColor = color,disabledColor = colorblock.disabledColor*color,highlightedColor = colorblock.highlightedColor * color,pressedColor = colorblock.pressedColor * color ,selectedColor = colorblock.selectedColor * color,colorMultiplier = colorblock.colorMultiplier, fadeDuration = colorblock.fadeDuration};
+        }
+        public override void OnExplode()
+        {
+            base.OnExplode();
         }
     }
 }

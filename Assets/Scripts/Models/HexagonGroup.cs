@@ -17,6 +17,18 @@ namespace Hexic.Models
         public Vector2 hexagon2GridCoordinates;
         public Vector2 hexagon3GridCoordinates;
 
+        private Hexagon hexagon1 {
+            get { return (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates]; }
+        }
+        private Hexagon hexagon2
+        {
+            get { return (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates]; }
+        }
+        private Hexagon hexagon3
+        {
+            get { return (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates]; }
+        }
+
         public bool turnTrigger;
         public bool selected;
 
@@ -34,7 +46,7 @@ namespace Hexic.Models
             center = equilibrium1+((_h3.transform.position - equilibrium1 ) / 2);
         }
 
-        public bool CheckMatch()
+        public bool CheckMatch()//Check colors, if they are all the same return true
         {
             var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
             var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];
@@ -52,7 +64,7 @@ namespace Hexic.Models
         }
 
 
-        public bool DequeueHexagons()
+        public bool DequeueHexagons()//dequeue, dissappear and remove hexagons at this trio
         {
             if (GridController._instance.gridCellData.ContainsKey(hexagon1GridCoordinates))
             {
@@ -84,7 +96,7 @@ namespace Hexic.Models
 
         Coroutine lastSelectedHighlightCoroutine;
 
-       public void SelectedHighlight()
+       public void SelectedHighlight()//Start highlight coroutine
         {
 
             GameManager._instance.lastHighlightCoroutine = GameManager._instance.StartCoroutine(GameManager._instance.selectedHexagonTrio.HighlightCoroutine());
@@ -100,9 +112,9 @@ namespace Hexic.Models
 
             while (elapsedTime1 < 1f)
             {
-                _h1.image.color = Color.Lerp(Color.white, Color.gray, (elapsedTime1 / 1));
-                _h2.image.color = Color.Lerp(Color.white, Color.gray, (elapsedTime1 / 1));
-                _h3.image.color = Color.Lerp(Color.white, Color.gray, (elapsedTime1 / 1));
+                _h1.image.color = Color.Lerp(GameManager._instance.interactableDefaultColorBlock.normalColor, GameManager._instance.interactableDefaultColorBlock.highlightedColor, (elapsedTime1 / 1));
+                _h2.image.color = Color.Lerp(GameManager._instance.interactableDefaultColorBlock.normalColor, GameManager._instance.interactableDefaultColorBlock.highlightedColor, (elapsedTime1 / 1));
+                _h3.image.color = Color.Lerp(GameManager._instance.interactableDefaultColorBlock.normalColor, GameManager._instance.interactableDefaultColorBlock.highlightedColor, (elapsedTime1 / 1));
 
                 elapsedTime1 += 3 * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
@@ -110,9 +122,9 @@ namespace Hexic.Models
 
             while (elapsedTime2 < 1f)
             {
-                _h1.image.color = Color.Lerp(Color.gray, Color.white, (elapsedTime2 / 1));//Turn cells
-                _h2.image.color = Color.Lerp(Color.gray, Color.white, (elapsedTime2 / 1));//Turn cells
-                _h3.image.color = Color.Lerp(Color.gray, Color.white, (elapsedTime2 / 1));//Turn cells
+                _h1.image.color = Color.Lerp( GameManager._instance.interactableDefaultColorBlock.highlightedColor, GameManager._instance.interactableDefaultColorBlock.normalColor, (elapsedTime2 / 1));
+                _h2.image.color = Color.Lerp(GameManager._instance.interactableDefaultColorBlock.highlightedColor, GameManager._instance.interactableDefaultColorBlock.normalColor,(elapsedTime2 / 1));
+                _h3.image.color = Color.Lerp( GameManager._instance.interactableDefaultColorBlock.highlightedColor, GameManager._instance.interactableDefaultColorBlock.normalColor,(elapsedTime2 / 1));
 
                 elapsedTime2 += 3 * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
@@ -202,6 +214,23 @@ namespace Hexic.Models
 
         }
 
+        public bool HasLegalMoves()
+        {
+            if (GridController._instance.GetMatchableColor(hexagon1GridCoordinates) == hexagon2.color || GridController._instance.GetMatchableColor(hexagon1GridCoordinates) == hexagon3.color)
+            {
+                return true;
+            }
+            if (GridController._instance.GetMatchableColor(hexagon2GridCoordinates) == hexagon1.color || GridController._instance.GetMatchableColor(hexagon1GridCoordinates) == hexagon3.color)
+            {
+                return true;
+            }
+            if (GridController._instance.GetMatchableColor(hexagon3GridCoordinates) == hexagon2.color || GridController._instance.GetMatchableColor(hexagon1GridCoordinates) == hexagon1.color)
+            {
+                return true;
+            }
+            return false;
+
+        }
 
     }
 }

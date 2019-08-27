@@ -190,30 +190,12 @@ namespace Hexic.Runtime
             for (int i = 0; i < GameManager._instance.hexagonTypes.Count; i++)
             {
 
-                if (gridCoordinates.x % 2 == 0) //if it is even
+                if(IsColorMatchable(gridCoordinates, GameManager._instance.hexagonTypes[i].color))
                 {
-                    queryVectors = evenQueryVectors;
-                }
-                else
-                {
-                    queryVectors = oddQueryVectors;
+                    availableColors.Remove(GameManager._instance.hexagonTypes[i].color);
 
                 }
 
-                foreach (List<Vector2> vectors in queryVectors)
-                {
-                    if (gridCellData.ContainsKey(gridCoordinates + vectors[0]) && gridCellData.ContainsKey(gridCoordinates + vectors[1]))
-                    {
-                        if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == GameManager._instance.hexagonTypes[i].color)
-                        {
-                          
-                            availableColors.Remove(GameManager._instance.hexagonTypes[i].color);
-                            continue;
-                        }
-                    }
-
-                }
-                
             }
            
 
@@ -222,6 +204,67 @@ namespace Hexic.Runtime
             return PoolController._instance.ReuseCell<Hexagon>(randomHexagonColor,gridCoordinates);
 
         }
+
+        public bool IsColorMatchable(Vector2 gridCoordinates,Color color)
+        {
+            List<List<Vector2>> queryVectors;
+
+            if (gridCoordinates.x % 2 == 0) //if it is even
+            {
+                queryVectors = evenQueryVectors;
+            }
+            else
+            {
+                queryVectors = oddQueryVectors;
+
+            }
+
+            foreach (List<Vector2> vectors in queryVectors)
+            {
+                if (gridCellData.ContainsKey(gridCoordinates + vectors[0]) && gridCellData.ContainsKey(gridCoordinates + vectors[1]))
+                {
+                    if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == color)
+                    {
+
+                        return true;
+                        
+                    }
+                }
+
+            }
+            return false;
+        }
+
+        public Color GetMatchableColor(Vector2 gridCoordinates)
+        {
+            List<List<Vector2>> queryVectors;
+
+            if (gridCoordinates.x % 2 == 0) //if it is even
+            {
+                queryVectors = evenQueryVectors;
+            }
+            else
+            {
+                queryVectors = oddQueryVectors;
+
+            }
+
+            foreach (List<Vector2> vectors in queryVectors)
+            {
+                if (gridCellData.ContainsKey(gridCoordinates + vectors[0]) && gridCellData.ContainsKey(gridCoordinates + vectors[1]))
+                {
+                    if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color)
+                    {
+
+                        return ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color;
+
+                    }
+                }
+
+            }
+            return Color.clear;
+        }
+
         float _lastBombSpawnedScore;
         Hexagon SpawnHexagon(Vector2 gridCoordinates)//Use this function at the start of the game for initializing hexagons
         {
@@ -244,10 +287,23 @@ namespace Hexic.Runtime
         }
 
 
+       public bool LegalMoveQuery()
+        {
+
+            foreach (HexagonTrio hexagonTrio in HexagonTrios)
+            {
+                if (hexagonTrio.HasLegalMoves())
+                {
+                    return true;
+                }
+
+            }
+            return false;
+
+        }
 
 
-
-            public bool MatchingQuery()//Check grid for color matches
+        public bool MatchingQuery()//Check grid for color matches
             {
             List<HexagonTrio> matchedTrios = new List<HexagonTrio>();
 
@@ -348,6 +404,14 @@ namespace Hexic.Runtime
 
 
         }
+
+        //public bool CheckForLethalMoves()
+        //{
+        //    foreach (HexagonTrio trio in HexagonTrios)
+        //    {
+        //        trio
+        //    }
+        //}
 
         public List<Vector2> GetEmptyCellsInGrid()
         {

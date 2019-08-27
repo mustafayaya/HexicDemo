@@ -38,7 +38,7 @@ namespace Hexic.Runtime
                         Touch touch = Input.GetTouch(i);
                         if (touch.phase == TouchPhase.Began)
                         {
-                            position = Camera.main.WorldToScreenPoint(touch.position);
+                            position = touch.position;
                             return true;
                         }
                     }

@@ -30,9 +30,9 @@ namespace Hexic.Runtime
         public float swipeAnimationSpeed = 10f;
         public Image trioCursorImage;
         public Text gameOverText;
-
+        public ColorBlock interactableDefaultColorBlock = ColorBlock.defaultColorBlock;
         public float explosionPoints = 5f;
-        public float bombSpawnScore = 1000f;
+        public float bombSpawnScore = 1000f;//Score for spawning 
         public bool interactable = false; //Set this false while initializing, calculating matches etc.
 
         [Header("Runtime")]
@@ -138,6 +138,12 @@ namespace Hexic.Runtime
             foreach (HexagonBomb bomb in hexagonBombs)
             {
                 bomb.Countdown();
+            }
+
+            if (!GridController._instance.LegalMoveQuery())
+            {
+                FinishGame();
+
             }
             moves++;
         }

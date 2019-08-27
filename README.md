@@ -1,2 +1,2 @@
-# VertigoHexicDemo
+# HexicDemo
 This is a demo project.

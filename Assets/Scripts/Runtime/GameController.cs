@@ -36,7 +36,7 @@ namespace Hexic.Runtime
         [Header("Runtime")]
         float score;
 
-        HexagonTrio selectedHexagonTrio;
+        public HexagonTrio selectedHexagonTrio;
         private void Start()
         {
             GridController._instance.InitializeGrid();
@@ -61,7 +61,8 @@ namespace Hexic.Runtime
                 scoreText.text = score.ToString();
             }
         }
-
+        HexagonTrio lastTrio;
+        public Coroutine lastHighlightCoroutine;
         void HexagonSelectionHandler()
         {
             Vector3 touchedPosition ;
@@ -71,6 +72,13 @@ namespace Hexic.Runtime
      
                     selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y));
                     trioCursorImage.transform.position = selectedHexagonTrio.center;
+                if (lastTrio != null)
+                {
+                    lastTrio.SelectedHighlight(false);
+                }
+                    lastTrio = selectedHexagonTrio;
+                    selectedHexagonTrio.SelectedHighlight(true);
+                
             }
 
             

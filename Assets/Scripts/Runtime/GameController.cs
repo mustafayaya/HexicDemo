@@ -39,13 +39,15 @@ namespace Hexic.Runtime
         }
         void Update()
         {
+                HexagonSelectionHandler();
             if (interactable)
             {
-                HexagonSelectionHandler();
                 SwipeHandler();
 
             }
-
+            if (Input.GetKey(KeyCode.K)) {
+                GridController._instance.MatchingQuery();
+            }
 
         }
 
@@ -56,9 +58,18 @@ namespace Hexic.Runtime
             if (InputController._instance.GetScreenTouch(out touchedPosition))
             {
                
-                selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x,touchedPosition.y));
 
-                trioCursorImage.transform.position = selectedHexagonTrio.center;
+
+                if (selectedHexagonTrio == GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y)))
+                {
+                    Debug.Log( "Match : "+ selectedHexagonTrio.CheckMatch() + ((Hexagon)GridController._instance.gridCellData[ selectedHexagonTrio.hexagon1GridCoordinates]).color + ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon2GridCoordinates]).color+ ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon3GridCoordinates]).color);
+
+                }
+                else
+                {
+                    selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y));
+                    trioCursorImage.transform.position = selectedHexagonTrio.center;
+                }
             }
 
             
@@ -103,21 +114,25 @@ namespace Hexic.Runtime
 
         IEnumerator TryToMatch(bool clockwise,HexagonTrio selectedHexagonTrio) 
         {
+            interactable = false;
             if (clockwise)
             {
 
                 StartCoroutine(selectedHexagonTrio.TurnClockwise());//First turn
-               
+
+
                 yield return new WaitWhile(() =>!selectedHexagonTrio.turnTrigger);
-               
+
+
                 if (GridController._instance.MatchingQuery())
                 {
-                    Debug.Log(GridController._instance.MatchingQuery());
 
                     StopCoroutine(lastMatchCoroutine);
                 }
                 else
                 {
+                    yield return new WaitForSeconds(0.1f);
+
                     StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
 
                 }
@@ -125,18 +140,21 @@ namespace Hexic.Runtime
                 yield return new WaitWhile(() => !selectedHexagonTrio.turnTrigger);
                 if (GridController._instance.MatchingQuery())
                 {
-                    Debug.Log(GridController._instance.MatchingQuery());
 
                     StopCoroutine(lastMatchCoroutine);
                 }
                 else
                 {
+                    yield return new WaitForSeconds(0.1f);
+
                     StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
 
                 }
 
 
             }
+            interactable = true;
+
         }
 
 

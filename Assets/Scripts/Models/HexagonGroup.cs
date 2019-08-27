@@ -12,13 +12,10 @@ namespace Hexic.Models
 {
    public class HexagonTrio
     {
-        public Hexagon h1;
-        public Hexagon h2;
-        public Hexagon h3;
 
-        public Vector2 h1GridCoordinates;
-        public Vector2 h2GridCoordinates;
-        public Vector2 h3GridCoordinates;
+        public Vector2 hexagon1GridCoordinates;
+        public Vector2 hexagon2GridCoordinates;
+        public Vector2 hexagon3GridCoordinates;
 
         public bool turnTrigger;
 
@@ -26,45 +23,60 @@ namespace Hexic.Models
 
         public HexagonTrio(Hexagon _h1, Hexagon _h2, Hexagon _h3)
         {
-            h1 = _h1;
-            h2 = _h2;
-            h3 = _h3;
-            h1GridCoordinates = h1.gridCoordinates;
-            h2GridCoordinates = h2.gridCoordinates;
-            h3GridCoordinates = h3.gridCoordinates;
 
-            Vector3 equilibrium1 = (h1.transform.position + ((h2.transform.position - h1.transform.position) / 2));
+            hexagon1GridCoordinates = _h1.gridCoordinates;
+            hexagon2GridCoordinates = _h2.gridCoordinates;
+            hexagon3GridCoordinates = _h3.gridCoordinates;
 
-            center = equilibrium1+((h3.transform.position - equilibrium1 ) / 2);
+            Vector3 equilibrium1 = (_h1.transform.position + ((_h2.transform.position - _h3.transform.position) / 2));
+
+            center = equilibrium1+((_h3.transform.position - equilibrium1 ) / 2);
         }
 
         public bool CheckMatch()
         {
-            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
-            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
-            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+            var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
+            var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];
+            var _h3 = (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates];
 
-            if (_h1.color == _h2.color && _h1.color == h3.color && _h2.color == _h3.color)
+            if (_h1.color.Equals(_h2.color) && _h1.color.Equals(_h3.color) && _h2.color.Equals(_h3.color))
             {
                 _h1.image.color = Color.grey;
                 _h2.image.color = Color.grey;
                 _h3.image.color = Color.grey;
-
                 return true;
             }
+
             return false;
         }
 
-        public bool DequeueTrios()
+
+        public bool DequeueHexagons()
         {
-            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
-            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
-            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+            if (GridController._instance.gridCellData.ContainsKey(hexagon1GridCoordinates))
+            {
+                var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(hexagon1GridCoordinates);
+                _h1.OnExplode();
 
-            _h1.OnExplode();
-            _h2.OnExplode();
-            _h3.OnExplode();
 
+            }
+            if (GridController._instance.gridCellData.ContainsKey(hexagon2GridCoordinates))
+            {
+                var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(hexagon2GridCoordinates);
+                _h2.OnExplode();
+
+
+            }
+            if (GridController._instance.gridCellData.ContainsKey(hexagon3GridCoordinates))
+            {
+                var _h3 = (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(hexagon3GridCoordinates);
+                _h3.OnExplode();
+
+
+            }
 
             return true;
         }
@@ -75,13 +87,12 @@ namespace Hexic.Models
 
             var elapsedTime = 0f;
 
-            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
-            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
-            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+            var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
+            var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];
+            var _h3 = (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates];
             _h1.interactable = false;
             _h2.interactable = false;
             _h3.interactable = false;
-            GameController._instance.interactable = false;
 
             var startingPos = _h1.transform.position;
             var startingPos2 = _h2.transform.position;
@@ -101,14 +112,13 @@ namespace Hexic.Models
             _h2.transform.position = startingPos3;
             _h3.transform.position = startingPos;
 
-            GridController._instance.InsertCellToGrid(h1GridCoordinates, _h3);//Insert new states to grid data
-            GridController._instance.InsertCellToGrid(h2GridCoordinates, _h1);
-            GridController._instance.InsertCellToGrid(h3GridCoordinates, _h2);
+            GridController._instance.InsertCellToGrid(hexagon1GridCoordinates, _h3);//Insert new states to grid data
+            GridController._instance.InsertCellToGrid(hexagon2GridCoordinates, _h1);
+            GridController._instance.InsertCellToGrid(hexagon3GridCoordinates, _h2);
             turnTrigger = true;
             _h1.interactable = true;
             _h2.interactable = true;
             _h3.interactable = true;
-            GameController._instance.interactable = true;
 
         }
 

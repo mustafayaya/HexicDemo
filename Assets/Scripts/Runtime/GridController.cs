@@ -33,7 +33,8 @@ namespace Hexic.Runtime
         public Dictionary<Vector2, Cell> gridCellData = new Dictionary<Vector2, Cell>(); //Grid'de bulunan hücrelerin datalarını saklar
 
         bool gridInitialized;
-    
+        Coroutine _lastErosionCoroutine = null;
+
 
         public void InitializeGrid()
         {
@@ -109,23 +110,47 @@ namespace Hexic.Runtime
 
         public void InsertCellToGrid(Vector2 gridCell, Cell cell)
         {
-            var gridWidth = (gridSize.x -1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
+            
+            cell.Translate(GetCellWorldPositionAtGrid(gridCell));
+            ClearGridCell(gridCell);
+            gridCellData.Add(gridCell, cell);
+            cell.gridCoordinates = gridCell;
+
+        }
+
+        public void ClearGridCell(Vector2 gridCell)
+        {
+            gridCellData.Remove(gridCell);
+            if (gridCellData.ContainsKey(gridCell))
+            {
+                Debug.Log("couldn't deleted");
+            }
+        }
+        public void InsertCellToGrid(Vector2 gridCell, Cell cell, Vector3 startpos)
+        {
+
+            cell.Translate(startpos,GetCellWorldPositionAtGrid(gridCell));
+            gridCellData.Remove(gridCell);
+            gridCellData.Add(gridCell, cell);
+            cell.gridCoordinates = gridCell;
+            cell.onClick.RemoveAllListeners();
+            cell.onClick.AddListener(() => Debug.Log("I am at " + cell.gridCoordinates+" and I am " + cell.image.color));
+
+        }
+        Vector2 GetCellWorldPositionAtGrid(Vector2 gridCell)
+        {
+            var gridWidth = (gridSize.x - 1) * cellSize.x * 3 / 4 + (gridSize.x - 1) * cellSpacing; // 3/4 constant must be used for drawing honeycomb pattern 
             var gridHeight = (gridSize.y - 1) * cellSize.y + (gridSize.y - 1) * cellSpacing;
             Vector3 startPosition = new Vector3(-gridWidth / 2, gridHeight / 2) + rectOffset;
             if (gridCell.x % 2 == 0)
             {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing) - cellSize.y / 2);
+                return startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing) - cellSize.y / 2);
             }
             else
             {
-                cell.GetComponent<RectTransform>().localPosition = startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing));
+                return startPosition + new Vector3(gridCell.x * cellSize.x * 3 / 4 + gridCell.x * cellSpacing, gridCell.y * -(cellSize.y + cellSpacing));
 
             }
-
-            gridCellData.Remove(gridCell);
-            gridCellData.Add(gridCell, cell);
-            cell.gridCoordinates = gridCell;
-
         }
 
         List<List<Vector2>> evenQueryVectors = new List<List<Vector2>>() {
@@ -146,8 +171,8 @@ namespace Hexic.Runtime
         };
 
 
-       Hexagon InitializeHexagon(Vector2 gridCoordinates)
-        {
+       Hexagon InitializeHexagon(Vector2 gridCoordinates)//Use this function at the start of the game for initializing hexagons
+       {
 
             List<Color> availableColors = new List<Color>();
             List<List<Vector2>> queryVectors;
@@ -174,12 +199,7 @@ namespace Hexic.Runtime
                     {
                         if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == GameController._instance.hexagonTypes[i].color)
                         {
-                            foreach (Vector2 v in vectors)
-                            {
-                                Debug.Log(v);
-
-                            }
-
+                          
                             availableColors.Remove(GameController._instance.hexagonTypes[i].color);
                             continue;
                         }
@@ -192,12 +212,28 @@ namespace Hexic.Runtime
 
             Color randomHexagonColor = availableColors[Random.Range(0, availableColors.Count)];
 
-            return PoolController._instance.ReuseHexagon(randomHexagonColor,gridCoordinates);
+            return PoolController._instance.ReuseCell<Hexagon>(randomHexagonColor,gridCoordinates);
 
         }
 
-        public bool MatchingQuery()//Check grid for color matches
+        Hexagon SpawnHexagon(Vector2 gridCoordinates)//Use this function at the start of the game for initializing hexagons
         {
+            List<Color> availableColors = new List<Color>();
+            foreach (HexagonModel model in GameController._instance.hexagonTypes)
+            { //Initialize available color list
+                availableColors.Add(model.color);
+            }
+            var hexagon = PoolController._instance.ReuseCell<Hexagon>(availableColors[Random.Range(0, availableColors.Count)], gridCoordinates);
+            InsertCellToGrid(gridCoordinates,hexagon,GetCellWorldPositionAtGrid(new Vector2(gridCoordinates.x,0))+ new Vector2(0,cellSpacing + cellSize.y));
+            return hexagon;
+        }
+
+
+
+
+
+            public bool MatchingQuery()//Check grid for color matches
+            {
             List<HexagonTrio> matchedTrios = new List<HexagonTrio>();
 
             foreach (HexagonTrio hexagonTrio in HexagonTrios)
@@ -211,15 +247,110 @@ namespace Hexic.Runtime
 
             if (matchedTrios.Count != 0)
             {
+                foreach (HexagonTrio trio in matchedTrios)
+                {
+                    trio.DequeueHexagons();
 
-               matchedTrios[0].DequeueTrios();
+                }
+                _lastErosionCoroutine = StartCoroutine(ErosionCoroutine(matchedTrios));
+                Debug.Log(_lastErosionCoroutine.ToString());
+
                 return true;
             }
 
             return false;
         }
 
-       
+        IEnumerator ErosionCoroutine(List<HexagonTrio> matchedTrios) //
+        {
+            var emptyCells = GetEmptyCellsInGrid();
+            yield return new WaitForSeconds(0.01f);
+
+            foreach (Vector2 cellCoordinate in emptyCells) //Check every empty block for executing erosion
+            {
+                bool stopUndergoErosion = false;
+                for (int y = ((int)cellCoordinate.y+1 ); y < gridSize.y; y++)
+                {
+                    if (!gridCellData.ContainsKey(new Vector2(cellCoordinate.x, y)))
+                    {
+                        stopUndergoErosion = true;
+                        break;
+                    }
+                }
+
+                if (stopUndergoErosion)//If there is a empty cell at the bottom break this coroutine
+                {
+                    continue;
+                }
+                var willSpawnCells = 0;
+
+                for (int y = ((int)cellCoordinate.y); y >= 0; y--) //calculate cell number to the top
+                {
+                    if (gridCellData.ContainsKey(new Vector2(cellCoordinate.x, y)))
+                    {
+
+                        for (int i = y+1; i < gridSize.y; i++)
+                        {
+
+                            if (gridCellData.ContainsKey(new Vector2(cellCoordinate.x, i)))
+                            {
+                                InsertCellToGrid(new Vector2(cellCoordinate.x, i-1), gridCellData[new Vector2(cellCoordinate.x, y)],GetCellWorldPositionAtGrid(new Vector2(cellCoordinate.x, y)));
+                                ClearGridCell( (new Vector2(cellCoordinate.x, y)));
+                                break;
+                            }
+
+                            if (i == gridSize.y -1) //If there is no cell exists, move this piece to bottom
+                            {
+                                InsertCellToGrid(new Vector2(cellCoordinate.x, i), gridCellData[new Vector2(cellCoordinate.x, y)], GetCellWorldPositionAtGrid(new Vector2(cellCoordinate.x, y)));
+                                ClearGridCell((new Vector2(cellCoordinate.x, y)));
+                            }
+                            
+                        }
+                    }
+                    else
+                    {
+                        willSpawnCells++; //Calculate the amount of hexagons will be spawned after erosion
+                    }
+                    yield return new WaitForSeconds(0.03f);
+
+                }
+                for (int i = willSpawnCells-1; i >= 0;i--)
+                {
+                    yield return new WaitForSeconds(0.08f);
+
+                    var cell = SpawnHexagon(new Vector2(cellCoordinate.x, i));
+                                        
+                }
+
+                
+            }
+            if (!MatchingQuery())
+            {
+                GameController._instance.interactable = true;
+            }
+
+
+        }
+
+        public List<Vector2> GetEmptyCellsInGrid()
+        {
+            List<Vector2> emptyCells = new List<Vector2>();
+            for (int x = 0; x < gridSize.x; x++)//Initialize trios
+            {
+
+                for (int y = 0; y < gridSize.y ; y++)
+                {
+                    if (!gridCellData.ContainsKey(new Vector2(x,y)))
+                    {
+
+                        emptyCells.Add(new Vector2(x, y));
+                    }
+                }
+            }
+            return emptyCells;
+        }
+
+
 
     }
 }

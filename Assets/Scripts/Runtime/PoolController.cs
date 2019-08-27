@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Hexic.Elements;
+using System;
 
 namespace Hexic.Runtime
 {
@@ -47,22 +48,46 @@ public class PoolController : MonoBehaviour
             }
             else
             {
-                cellPool.Add(CellType.Hexagon,new Queue<Cell>());
+                cellPool.Add(CellType.Hexagon, new Queue<Cell>());
                 PoolCells(_cellSize);
             }
-
-
-                
+            if (cellPool.ContainsKey(CellType.Bomb))
+            {
+                var queue = cellPool[CellType.Bomb];
+                for (int i = 0; i < GridController._instance.gridSize.x; i++) //Pool bombs
+                {
+                    GameObject go = (GameObject)GameObject.Instantiate(GridController._instance.hexagonBombPrefab, GridController._instance.gridRectTransform.transform);
+                    var _cell = go.GetComponent<Hexagon>();
+                    queue.Enqueue(_cell);
+                    _cell.SetSize(_cellSize);
+                    go.SetActive(false);
+                }
+            }
+            else
+            {
+                cellPool.Add(CellType.Bomb, new Queue<Cell>());
+                PoolCells(_cellSize);
+            }
         }
 
 
         public T ReuseCell<T>(Color color, Vector2 _gridCoordinates) where T : Cell
         {
+            Type cellType = typeof(T);
+            Cell cell = null;
+            if (cellType == typeof(Hexagon))
+            {
+                cell = (Cell)cellPool[CellType.Hexagon].Dequeue();
+                cellPool[CellType.Hexagon].Enqueue(cell);
+            }
+            if (cellType == typeof(HexagonBomb))
+            {
+                cell = (Cell)cellPool[CellType.Bomb].Dequeue();
+                cellPool[CellType.Bomb].Enqueue(cell);
+            }
 
-                    var cell = (Cell)cellPool[CellType.Hexagon].Dequeue();
-                    cellPool[CellType.Hexagon].Enqueue(cell);
 
-                      if (cell.gameObject.activeSelf)//return new hexagon if object is using
+            if (cell.gameObject.activeSelf)//return new hexagon if object is using
                       {
                        return ReuseCell<T>(color, _gridCoordinates);
                       }
@@ -70,9 +95,9 @@ public class PoolController : MonoBehaviour
                       ((Hexagon)cell).image.color = Color.white;
 
                        ((Hexagon)cell).color = color;
-            ((Hexagon)cell).colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
+                  ((Hexagon)cell).colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
 
-            ((Hexagon)cell).gridCoordinates = _gridCoordinates;
+                   ((Hexagon)cell).gridCoordinates = _gridCoordinates;
 
                       cell.OnReuse();
                     return cell as T;

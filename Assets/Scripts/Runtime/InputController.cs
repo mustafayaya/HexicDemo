@@ -136,20 +136,20 @@ namespace Hexic.Runtime
 
                 //swipe upwards
                 //swipe upwards
-                if (currentSwipe.y > 0 && currentSwipe.x > -5f && currentSwipe.x < 5f)
+                if (currentSwipe.y > 0 && currentSwipe.x > -0.5f && currentSwipe.x < 0.5f)
                 {
                     Debug.Log("up swipe");
                     return SwipeType.Up;
                 }
                 //swipe down
-                if (currentSwipe.y < 0 && currentSwipe.x > -5f && currentSwipe.x < 5f)
+                if (currentSwipe.y < 0 && currentSwipe.x > -0.5f && currentSwipe.x < 0.5f)
                 {
                     Debug.Log("down swipe");
                     return SwipeType.Down;
 
                 }
                 //swipe left
-                if (currentSwipe.x < 0 && currentSwipe.y > -1f && currentSwipe.y < 1f)
+                if (currentSwipe.x < 0 && currentSwipe.y > -0.5f && currentSwipe.y < 0.5f)
                 {
                     Debug.Log("left swipe");
                     return SwipeType.Left;

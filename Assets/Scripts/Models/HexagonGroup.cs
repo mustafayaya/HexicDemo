@@ -84,20 +84,10 @@ namespace Hexic.Models
 
         Coroutine lastSelectedHighlightCoroutine;
 
-       public void SelectedHighlight(bool highlight)
+       public void SelectedHighlight()
         {
-            if (!highlight)
-            {
-                GridController._instance.StopCoroutine(lastSelectedHighlightCoroutine);
-                var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
-                var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];
-                var _h3 = (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates];
-                _h1.image.color = Color.white;
-                _h2.image.color = Color.white;
-                _h3.image.color = Color.white;
-                return;
-            }
-            GameController._instance.lastHighlightCoroutine = GameController._instance.StartCoroutine(GameController._instance.selectedHexagonTrio.HighlightCoroutine());
+
+            GameManager._instance.lastHighlightCoroutine = GameManager._instance.StartCoroutine(GameManager._instance.selectedHexagonTrio.HighlightCoroutine());
         }
 
         IEnumerator HighlightCoroutine()
@@ -114,7 +104,7 @@ namespace Hexic.Models
                 _h2.image.color = Color.Lerp(Color.white, Color.gray, (elapsedTime1 / 1));
                 _h3.image.color = Color.Lerp(Color.white, Color.gray, (elapsedTime1 / 1));
 
-                elapsedTime1 += 2 * Time.deltaTime;
+                elapsedTime1 += 3 * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
             }
 
@@ -124,12 +114,13 @@ namespace Hexic.Models
                 _h2.image.color = Color.Lerp(Color.gray, Color.white, (elapsedTime2 / 1));//Turn cells
                 _h3.image.color = Color.Lerp(Color.gray, Color.white, (elapsedTime2 / 1));//Turn cells
 
-                elapsedTime2 += 2 * Time.deltaTime;
+                elapsedTime2 += 3 * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
             }
 
 
-            GameController._instance.lastHighlightCoroutine = GameController._instance.StartCoroutine(GameController._instance.selectedHexagonTrio.HighlightCoroutine());
+
+            GameManager._instance.lastHighlightCoroutine = GameManager._instance.StartCoroutine(GameManager._instance.selectedHexagonTrio.HighlightCoroutine());
 
 
         }
@@ -166,7 +157,7 @@ namespace Hexic.Models
                     _h2.transform.position = Vector3.Lerp(startingPos2, startingPos3, (elapsedTime / 2));
                     _h3.transform.position = Vector3.Lerp(startingPos3, startingPos, (elapsedTime / 2));
 
-                    elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                    elapsedTime += GameManager._instance.swipeAnimationSpeed * Time.deltaTime;
                     yield return new WaitForSeconds(0.01f);
                 }
 
@@ -191,7 +182,7 @@ namespace Hexic.Models
                     _h2.transform.position = Vector3.Lerp(startingPos2, startingPos, (elapsedTime / 2));
                     _h3.transform.position = Vector3.Lerp(startingPos3, startingPos2, (elapsedTime / 2));
 
-                    elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                    elapsedTime += GameManager._instance.swipeAnimationSpeed * Time.deltaTime;
                     yield return new WaitForSeconds(0.01f);
                 }
 

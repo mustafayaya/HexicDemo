@@ -4,21 +4,22 @@ using UnityEngine;
 using Hexic.Models;
 using Hexic.Elements;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 namespace Hexic.Runtime
 {
 
 
-    public class GameController : MonoBehaviour
+    public class GameManager : MonoBehaviour
     {
-        public static GameController _instance //Singleton here
+        public static GameManager _instance //Singleton here
         {
             get {                
-                return FindObjectOfType<GameController>();
+                return FindObjectOfType<GameManager>();
             }
             set
             {
-                _instance = FindObjectOfType<GameController>();
+                _instance = FindObjectOfType<GameManager>();
             }
         }
         
@@ -27,17 +28,24 @@ namespace Hexic.Runtime
         public List<HexagonModel> hexagonTypes = new List<HexagonModel>(); //Add hexagon types here
         public float animationWaitTime;
         public float swipeAnimationSpeed = 10f;
-
         public Image trioCursorImage;
-        public float explosionPoints = 5f;
+        public Text gameOverText;
 
+        public float explosionPoints = 5f;
+        public float bombSpawnScore = 1000f;
         public bool interactable = false; //Set this false while initializing, calculating matches etc.
 
         [Header("Runtime")]
-        float score;
+        public float score;
 
         public HexagonTrio selectedHexagonTrio;
-        private void Start()
+
+
+        void Start()
+        {
+            StartGame();
+        }
+        public void StartGame()
         {
             GridController._instance.InitializeGrid();
             AddScore(0);
@@ -74,10 +82,10 @@ namespace Hexic.Runtime
                     trioCursorImage.transform.position = selectedHexagonTrio.center;
                 if (lastTrio != null)
                 {
-                    lastTrio.SelectedHighlight(false);
+                    lastTrio.SelectedHighlight();
                 }
                     lastTrio = selectedHexagonTrio;
-                    selectedHexagonTrio.SelectedHighlight(true);
+                    selectedHexagonTrio.SelectedHighlight();
                 
             }
 
@@ -122,8 +130,17 @@ namespace Hexic.Runtime
                 }
             }
         }
-
-        
+        int moves;
+        public void CountMove() //Gets triggered when player makes a move
+        {
+            Debug.Log("Player move");
+            var hexagonBombs = FindObjectsOfType<HexagonBomb>();
+            foreach (HexagonBomb bomb in hexagonBombs)
+            {
+                bomb.Countdown();
+            }
+            moves++;
+        }
 
         IEnumerator TryToMatch(bool clockwise,HexagonTrio selectedHexagonTrio) 
         {
@@ -138,7 +155,7 @@ namespace Hexic.Runtime
 
                 if (GridController._instance.MatchingQuery())
                 {
-
+                       CountMove();
                     StopCoroutine(lastMatchCoroutine);
                 }
                 else
@@ -152,7 +169,9 @@ namespace Hexic.Runtime
                 if (GridController._instance.MatchingQuery())
                 {
 
-                    StopCoroutine(lastMatchCoroutine);
+                CountMove();
+
+                StopCoroutine(lastMatchCoroutine);
                 }
                 else
                 {
@@ -169,18 +188,28 @@ namespace Hexic.Runtime
         }
 
 
-        public void HexagonTrioTurnOneUnit()
-        {
-
-        }
-
-
         struct CellInputQuery
         {
             public float distance ;
             public HexagonTrio hexagonTrio;
 
 
+        }
+
+        public void FinishGame()
+        {
+            interactable = false;
+            StopAllCoroutines();
+            gameOverText.gameObject.SetActive(true);
+            StartCoroutine(GridController._instance.DissolveGrid());
+
+            StartCoroutine(Restart());
+        }
+
+        public IEnumerator Restart()
+        {
+            yield return new WaitForSeconds(10f);
+            SceneManager.LoadScene(0);
         }
     }
     

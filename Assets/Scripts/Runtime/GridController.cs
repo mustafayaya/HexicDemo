@@ -27,6 +27,8 @@ namespace Hexic.Runtime
         public float cellSpacing = 3f;
         public Vector2 cellSize = new Vector2(63, 50); //Cell size of explosive like hexagon, bomb etc... For regular hexagon x/y constant is 1.16 
         public Object hexagonPrefab;
+        public Object hexagonBombPrefab;
+
         public RectTransform gridRectTransform;
         public Vector3 rectOffset;
 
@@ -45,7 +47,7 @@ namespace Hexic.Runtime
         private IEnumerator Draw() //Draw game area
         {
 
-            WaitForSeconds wait = new WaitForSeconds(GameController._instance.animationWaitTime); 
+            WaitForSeconds wait = new WaitForSeconds(GameManager._instance.animationWaitTime); 
 
 
 
@@ -74,7 +76,7 @@ namespace Hexic.Runtime
 
         public void GridInitialized()
         {
-            GameController._instance.interactable = true;
+            GameManager._instance.interactable = true;
             gridInitialized = true;
         }
 
@@ -181,11 +183,11 @@ namespace Hexic.Runtime
 
             List<Color> availableColors = new List<Color>();
             List<List<Vector2>> queryVectors;
-            foreach (HexagonModel model in GameController._instance.hexagonTypes) { //Initialize available color list
+            foreach (HexagonModel model in GameManager._instance.hexagonTypes) { //Initialize available color list
                 availableColors.Add(model.color);
             }
 
-            for (int i = 0; i < GameController._instance.hexagonTypes.Count; i++)
+            for (int i = 0; i < GameManager._instance.hexagonTypes.Count; i++)
             {
 
                 if (gridCoordinates.x % 2 == 0) //if it is even
@@ -202,10 +204,10 @@ namespace Hexic.Runtime
                 {
                     if (gridCellData.ContainsKey(gridCoordinates + vectors[0]) && gridCellData.ContainsKey(gridCoordinates + vectors[1]))
                     {
-                        if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == GameController._instance.hexagonTypes[i].color)
+                        if (((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == ((Hexagon)gridCellData[gridCoordinates + vectors[1]]).color && ((Hexagon)gridCellData[gridCoordinates + vectors[0]]).color == GameManager._instance.hexagonTypes[i].color)
                         {
                           
-                            availableColors.Remove(GameController._instance.hexagonTypes[i].color);
+                            availableColors.Remove(GameManager._instance.hexagonTypes[i].color);
                             continue;
                         }
                     }
@@ -220,13 +222,21 @@ namespace Hexic.Runtime
             return PoolController._instance.ReuseCell<Hexagon>(randomHexagonColor,gridCoordinates);
 
         }
-
+        float _lastBombSpawnedScore;
         Hexagon SpawnHexagon(Vector2 gridCoordinates)//Use this function at the start of the game for initializing hexagons
         {
             List<Color> availableColors = new List<Color>();
-            foreach (HexagonModel model in GameController._instance.hexagonTypes)
+            foreach (HexagonModel model in GameManager._instance.hexagonTypes)
             { //Initialize available color list
                 availableColors.Add(model.color);
+            }
+
+            if (GameManager._instance.score - _lastBombSpawnedScore  > GameManager._instance.bombSpawnScore) //Spawn a bomb if player has passed bombSpawnScore
+            {
+                _lastBombSpawnedScore = GameManager._instance.score;
+                var hexagonBomb = PoolController._instance.ReuseCell<HexagonBomb>(availableColors[Random.Range(0, availableColors.Count)], gridCoordinates);
+                InsertCellToGrid(gridCoordinates, hexagonBomb, GetCellWorldPositionAtGrid(new Vector2(gridCoordinates.x, 0)) + new Vector2(0, cellSpacing + cellSize.y));
+                return hexagonBomb;
             }
             var hexagon = PoolController._instance.ReuseCell<Hexagon>(availableColors[Random.Range(0, availableColors.Count)], gridCoordinates);
             InsertCellToGrid(gridCoordinates,hexagon,GetCellWorldPositionAtGrid(new Vector2(gridCoordinates.x,0))+ new Vector2(0,cellSpacing + cellSize.y));
@@ -273,7 +283,7 @@ namespace Hexic.Runtime
 
             foreach (Vector2 cellCoordinate in emptyCells) //Check every empty block for executing erosion
             {
-                GameController._instance.interactable = false;
+                GameManager._instance.interactable = false;
 
                 bool stopUndergoErosion = false;
                 for (int y = ((int)cellCoordinate.y+1 ); y < gridSize.y; y++)
@@ -333,7 +343,7 @@ namespace Hexic.Runtime
             }
             if (!MatchingQuery())
             {
-                GameController._instance.interactable = true;
+                GameManager._instance.interactable = true;
             }
 
 
@@ -357,7 +367,17 @@ namespace Hexic.Runtime
             return emptyCells;
         }
 
-
-
+        public IEnumerator DissolveGrid()
+        {
+            for (int i = 0; i<= gridSize.x; i++)
+            {
+                for (int j = 0; j <= gridSize.x; j++)
+                {
+                    gridCellData[new Vector2(i, j)].image.enabled = false;
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+        }
+        
     }
 }

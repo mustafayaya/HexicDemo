@@ -37,7 +37,7 @@ namespace Hexic.Elements
 
         public virtual void OnExplode()
         {
-            GameController._instance.AddScore(GameController._instance.explosionPoints);
+            GameManager._instance.AddScore(GameManager._instance.explosionPoints);
             StartCoroutine( ExplosionCoroutine());
         }
 
@@ -51,7 +51,7 @@ namespace Hexic.Elements
             {
                 GetComponent<RectTransform>().localPosition = Vector2.Lerp(startPosition,position,elapsedTime/animationTime);
 
-                elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                elapsedTime += GameManager._instance.swipeAnimationSpeed * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
             }
 
@@ -70,7 +70,7 @@ namespace Hexic.Elements
             {
                 image.color = Color.Lerp(startColor,new Color(1,1,1,0.5f),elapsedTime/ animationTime);
 
-                elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                elapsedTime += GameManager._instance.swipeAnimationSpeed * Time.deltaTime;
                 yield return new WaitForSeconds(0.01f);
             }
             gameObject.SetActive(false);

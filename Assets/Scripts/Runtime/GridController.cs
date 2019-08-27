@@ -212,7 +212,7 @@ namespace Hexic.Runtime
 
             Color randomHexagonColor = availableColors[Random.Range(0, availableColors.Count)];
 
-            return PoolController._instance.ReuseHexagon(randomHexagonColor,gridCoordinates);
+            return PoolController._instance.ReuseCell<Hexagon>(randomHexagonColor,gridCoordinates);
 
         }
 
@@ -223,7 +223,7 @@ namespace Hexic.Runtime
             { //Initialize available color list
                 availableColors.Add(model.color);
             }
-            var hexagon = PoolController._instance.ReuseHexagon(availableColors[Random.Range(0, availableColors.Count)], gridCoordinates);
+            var hexagon = PoolController._instance.ReuseCell<Hexagon>(availableColors[Random.Range(0, availableColors.Count)], gridCoordinates);
             InsertCellToGrid(gridCoordinates,hexagon,GetCellWorldPositionAtGrid(new Vector2(gridCoordinates.x,0))+ new Vector2(0,cellSpacing + cellSize.y));
             return hexagon;
         }
@@ -265,20 +265,20 @@ namespace Hexic.Runtime
         {
             var emptyCells = GetEmptyCellsInGrid();
             yield return new WaitForSeconds(0.01f);
-            bool continueMatching = false;
+
             foreach (Vector2 cellCoordinate in emptyCells) //Check every empty block for executing erosion
             {
-                bool stopUndergoEresion = false;
+                bool stopUndergoErosion = false;
                 for (int y = ((int)cellCoordinate.y+1 ); y < gridSize.y; y++)
                 {
                     if (!gridCellData.ContainsKey(new Vector2(cellCoordinate.x, y)))
                     {
-                        stopUndergoEresion = true;
+                        stopUndergoErosion = true;
                         break;
                     }
                 }
 
-                if (stopUndergoEresion)
+                if (stopUndergoErosion)//If there is a empty cell at the bottom break this coroutine
                 {
                     continue;
                 }
@@ -298,6 +298,12 @@ namespace Hexic.Runtime
                                 ClearGridCell( (new Vector2(cellCoordinate.x, y)));
                                 break;
                             }
+
+                            if (i == gridSize.y -1) //If there is no cell exists, move this piece to bottom
+                            {
+                                InsertCellToGrid(new Vector2(cellCoordinate.x, i), gridCellData[new Vector2(cellCoordinate.x, y)], GetCellWorldPositionAtGrid(new Vector2(cellCoordinate.x, y)));
+                                ClearGridCell((new Vector2(cellCoordinate.x, y)));
+                            }
                             
                         }
                     }
@@ -305,12 +311,12 @@ namespace Hexic.Runtime
                     {
                         willSpawnCells++; //Calculate the amount of hexagons will be spawned after erosion
                     }
-                    yield return new WaitForSeconds(0.05f);
+                    yield return new WaitForSeconds(0.03f);
 
                 }
                 for (int i = willSpawnCells-1; i >= 0;i--)
                 {
-                    yield return new WaitForSeconds(0.1f);
+                    yield return new WaitForSeconds(0.08f);
 
                     var cell = SpawnHexagon(new Vector2(cellCoordinate.x, i));
                                         

@@ -36,7 +36,7 @@ public class PoolController : MonoBehaviour
             if (cellPool.ContainsKey(CellType.Hexagon))
             {
                 var queue = cellPool[CellType.Hexagon];
-                for (int i = 0; i < GridController._instance.gridSize.x * GridController._instance.gridSize.y * 2; i++) //Grid'deki toplam hücre sayısının iki katı kadar obje poolla
+                for (int i = 0; i < GridController._instance.gridSize.x * GridController._instance.gridSize.y + GridController._instance.gridSize.x; i++) //Grid'deki toplam hücre sayısının iki katı kadar obje poolla
                 {
                     GameObject go = (GameObject)GameObject.Instantiate(GridController._instance.hexagonPrefab, GridController._instance.gridRectTransform.transform);
                     var _cell = go.GetComponent<Hexagon>();
@@ -56,17 +56,26 @@ public class PoolController : MonoBehaviour
         }
 
 
-        public Hexagon ReuseHexagon(Color color, Vector2 _gridCoordinates)
+        public T ReuseCell<T>(Color color, Vector2 _gridCoordinates) where T : Cell
         {
 
-                    var _hex = (Hexagon)cellPool[CellType.Hexagon].Dequeue();
-                      cellPool[CellType.Hexagon].Enqueue(_hex);
+                    var cell = (Cell)cellPool[CellType.Hexagon].Dequeue();
+                    cellPool[CellType.Hexagon].Enqueue(cell);
 
-                      _hex.color = color;
-                      _hex.gridCoordinates = _gridCoordinates;
+                      if (cell.gameObject.activeSelf)//return new hexagon if object is using
+                      {
+                       return ReuseCell<T>(color, _gridCoordinates);
+                      }
 
-                     _hex.OnReuse();
-                    return _hex;
+                      ((Hexagon)cell).image.color = Color.white;
+
+                       ((Hexagon)cell).color = color;
+            ((Hexagon)cell).colors = UnityEngine.UI.ColorBlock.defaultColorBlock;
+
+            ((Hexagon)cell).gridCoordinates = _gridCoordinates;
+
+                      cell.OnReuse();
+                    return cell as T;
 
         }
     }

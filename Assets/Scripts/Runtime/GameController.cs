@@ -62,7 +62,7 @@ namespace Hexic.Runtime
 
                 if (selectedHexagonTrio == GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y)))
                 {
-                    Debug.Log( "Match : "+ selectedHexagonTrio.CheckMatch() + ((Hexagon)GridController._instance.gridCellData[ selectedHexagonTrio.h1GridCoordinates]).color + ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.h2GridCoordinates]).color+ ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.h3GridCoordinates]).color);
+                    Debug.Log( "Match : "+ selectedHexagonTrio.CheckMatch() + ((Hexagon)GridController._instance.gridCellData[ selectedHexagonTrio.hexagon1GridCoordinates]).color + ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon2GridCoordinates]).color+ ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon3GridCoordinates]).color);
 
                 }
                 else
@@ -119,9 +119,10 @@ namespace Hexic.Runtime
             {
 
                 StartCoroutine(selectedHexagonTrio.TurnClockwise());//First turn
-                yield return new WaitForSeconds(0.2f);
+
 
                 yield return new WaitWhile(() =>!selectedHexagonTrio.turnTrigger);
+
 
                 if (GridController._instance.MatchingQuery())
                 {
@@ -130,8 +131,9 @@ namespace Hexic.Runtime
                 }
                 else
                 {
+                    yield return new WaitForSeconds(0.1f);
+
                     StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
-                    yield return new WaitForSeconds(0.2f);
 
                 }
 
@@ -143,8 +145,9 @@ namespace Hexic.Runtime
                 }
                 else
                 {
+                    yield return new WaitForSeconds(0.1f);
+
                     StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
-                    yield return new WaitForSeconds(0.2f);
 
                 }
 

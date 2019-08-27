@@ -29,26 +29,37 @@ namespace Hexic.Runtime
         public float swipeAnimationSpeed = 10f;
 
         public Image trioCursorImage;
+        public float explosionPoints = 5f;
+
+        public bool interactable = false; //Set this false while initializing, calculating matches etc.
 
         [Header("Runtime")]
+        float score;
+
         HexagonTrio selectedHexagonTrio;
-        public bool interactable = false; //Set this false while initializing, calculating matches etc.
         private void Start()
         {
             GridController._instance.InitializeGrid();
+            AddScore(0);
         }
         void Update()
         {
-                HexagonSelectionHandler();
             if (interactable)
             {
+                HexagonSelectionHandler();
+
                 SwipeHandler();
 
             }
-            if (Input.GetKey(KeyCode.K)) {
-                GridController._instance.MatchingQuery();
+        }
+        public Text scoreText;
+        public void AddScore(float points)
+        {
+            score += points;
+            if (scoreText)
+            {
+                scoreText.text = score.ToString();
             }
-
         }
 
         void HexagonSelectionHandler()
@@ -57,19 +68,9 @@ namespace Hexic.Runtime
 
             if (InputController._instance.GetScreenTouch(out touchedPosition))
             {
-               
-
-
-                if (selectedHexagonTrio == GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y)))
-                {
-                    Debug.Log( "Match : "+ selectedHexagonTrio.CheckMatch() + ((Hexagon)GridController._instance.gridCellData[ selectedHexagonTrio.hexagon1GridCoordinates]).color + ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon2GridCoordinates]).color+ ((Hexagon)GridController._instance.gridCellData[selectedHexagonTrio.hexagon3GridCoordinates]).color);
-
-                }
-                else
-                {
+     
                     selectedHexagonTrio = GetClosestHexagonTrio(new Vector2(touchedPosition.x, touchedPosition.y));
                     trioCursorImage.transform.position = selectedHexagonTrio.center;
-                }
             }
 
             
@@ -106,6 +107,10 @@ namespace Hexic.Runtime
                     {
                         lastMatchCoroutine = StartCoroutine(TryToMatch(true,selectedHexagonTrio));
                     }
+                    if (swipeType == InputController.SwipeType.Down)//Turn trio clockwise
+                    {
+                        lastMatchCoroutine = StartCoroutine(TryToMatch(false, selectedHexagonTrio));
+                    }
                 }
             }
         }
@@ -115,10 +120,9 @@ namespace Hexic.Runtime
         IEnumerator TryToMatch(bool clockwise,HexagonTrio selectedHexagonTrio) 
         {
             interactable = false;
-            if (clockwise)
-            {
 
-                StartCoroutine(selectedHexagonTrio.TurnClockwise());//First turn
+
+                StartCoroutine(selectedHexagonTrio.TurnHexagonTrio(clockwise));//First turn
 
 
                 yield return new WaitWhile(() =>!selectedHexagonTrio.turnTrigger);
@@ -132,8 +136,7 @@ namespace Hexic.Runtime
                 else
                 {
                     yield return new WaitForSeconds(0.1f);
-
-                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+                    StartCoroutine(selectedHexagonTrio.TurnHexagonTrio(clockwise));//Second turn
 
                 }
 
@@ -147,12 +150,12 @@ namespace Hexic.Runtime
                 {
                     yield return new WaitForSeconds(0.1f);
 
-                    StartCoroutine(selectedHexagonTrio.TurnClockwise());//Second turn
+                    StartCoroutine(selectedHexagonTrio.TurnHexagonTrio(clockwise));//Second turn
 
                 }
+            yield return new WaitWhile(() => !selectedHexagonTrio.turnTrigger);
 
 
-            }
             interactable = true;
 
         }

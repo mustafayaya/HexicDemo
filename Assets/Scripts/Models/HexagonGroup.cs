@@ -81,41 +81,77 @@ namespace Hexic.Models
             return true;
         }
 
-        public IEnumerator TurnClockwise() //Turns clockwise 1 unit
+        public IEnumerator TurnHexagonTrio(bool clockwise) //Turns clockwise 1 unit
         {
             turnTrigger = false;
 
             var elapsedTime = 0f;
 
+
             var _h1 = (Hexagon)GridController._instance.gridCellData[hexagon1GridCoordinates];//Get cells from grid data
             var _h2 = (Hexagon)GridController._instance.gridCellData[hexagon2GridCoordinates];
             var _h3 = (Hexagon)GridController._instance.gridCellData[hexagon3GridCoordinates];
+
+
+
+          
+
             _h1.interactable = false;
             _h2.interactable = false;
             _h3.interactable = false;
 
-            var startingPos = _h1.transform.position;
-            var startingPos2 = _h2.transform.position;
-            var startingPos3 = _h3.transform.position;
-            while (elapsedTime < 2)
+            if (clockwise )
             {
 
-                _h1.transform.position = Vector3.Lerp(startingPos, startingPos2, (elapsedTime / 2));//Turn cells
-                _h2.transform.position = Vector3.Lerp(startingPos2, startingPos3, (elapsedTime / 2));
-                _h3.transform.position = Vector3.Lerp(startingPos3, startingPos, (elapsedTime / 2));
+                var startingPos = _h1.transform.position;
+                var startingPos2 = _h2.transform.position;
+                var startingPos3 = _h3.transform.position;
+                while (elapsedTime < 2)
+                {
 
-                elapsedTime +=  GameController._instance.swipeAnimationSpeed* Time.deltaTime;
-                yield return new WaitForSeconds(0.01f);
+                    _h1.transform.position = Vector3.Lerp(startingPos, startingPos2, (elapsedTime / 2));//Turn cells
+                    _h2.transform.position = Vector3.Lerp(startingPos2, startingPos3, (elapsedTime / 2));
+                    _h3.transform.position = Vector3.Lerp(startingPos3, startingPos, (elapsedTime / 2));
+
+                    elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                    yield return new WaitForSeconds(0.01f);
+                }
+
+                _h1.transform.position = startingPos2;
+                _h2.transform.position = startingPos3;
+                _h3.transform.position = startingPos;
+
+                GridController._instance.InsertCellToGrid(hexagon1GridCoordinates, _h3);//Insert new states to grid data
+                GridController._instance.InsertCellToGrid(hexagon2GridCoordinates, _h1);
+                GridController._instance.InsertCellToGrid(hexagon3GridCoordinates, _h2);
+                turnTrigger = true;
+            }
+            if (!clockwise )
+            {
+                var startingPos = _h1.transform.position;
+                var startingPos2 = _h2.transform.position;
+                var startingPos3 = _h3.transform.position;
+                while (elapsedTime < 2)
+                {
+
+                    _h1.transform.position = Vector3.Lerp(startingPos, startingPos3, (elapsedTime / 2));//Turn cells
+                    _h2.transform.position = Vector3.Lerp(startingPos2, startingPos, (elapsedTime / 2));
+                    _h3.transform.position = Vector3.Lerp(startingPos3, startingPos2, (elapsedTime / 2));
+
+                    elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                    yield return new WaitForSeconds(0.01f);
+                }
+
+                _h1.transform.position = startingPos3;
+                _h2.transform.position = startingPos;
+                _h3.transform.position = startingPos2;
+
+                GridController._instance.InsertCellToGrid(hexagon1GridCoordinates, _h2);//Insert new states to grid data
+                GridController._instance.InsertCellToGrid(hexagon2GridCoordinates, _h3);
+                GridController._instance.InsertCellToGrid(hexagon3GridCoordinates, _h1);
+                turnTrigger = true;
             }
 
-            _h1.transform.position = startingPos2;
-            _h2.transform.position = startingPos3;
-            _h3.transform.position = startingPos;
-
-            GridController._instance.InsertCellToGrid(hexagon1GridCoordinates, _h3);//Insert new states to grid data
-            GridController._instance.InsertCellToGrid(hexagon2GridCoordinates, _h1);
-            GridController._instance.InsertCellToGrid(hexagon3GridCoordinates, _h2);
-            turnTrigger = true;
             _h1.interactable = true;
             _h2.interactable = true;
             _h3.interactable = true;

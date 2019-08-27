@@ -91,16 +91,21 @@ namespace Hexic.Runtime
                     if (x%2 ==0)
                     {
                         HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
-                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x, y + 1)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y + 1)], (Hexagon)gridCellData[new Vector2(x, y + 1)]));
                     }
                     else
                     {
                         if (y != 0)//if it is not at the top level
                         {
-                            HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)], (Hexagon)gridCellData[new Vector2(x + 1, y - 1)]));
+                            HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)],  (Hexagon)gridCellData[new Vector2(x + 1, y - 1)], (Hexagon)gridCellData[new Vector2(x + 1, y)]));
 
                         }
-                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x, y + 1)], (Hexagon)gridCellData[new Vector2(x + 1, y )]));
+                        HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y)], (Hexagon)gridCellData[new Vector2(x + 1, y)],(Hexagon)gridCellData[new Vector2(x, y + 1)]));
+                        if (y == gridSize.y - 2)//Add trios to the bottom
+                        {
+                            HexagonTrios.Add(new HexagonTrio((Hexagon)gridCellData[new Vector2(x, y + 1)],  (Hexagon)gridCellData[new Vector2(x + 1, y)],(Hexagon)gridCellData[new Vector2(x + 1, y + 1)]));
+
+                        }
                     }
                    
 
@@ -268,6 +273,8 @@ namespace Hexic.Runtime
 
             foreach (Vector2 cellCoordinate in emptyCells) //Check every empty block for executing erosion
             {
+                GameController._instance.interactable = false;
+
                 bool stopUndergoErosion = false;
                 for (int y = ((int)cellCoordinate.y+1 ); y < gridSize.y; y++)
                 {

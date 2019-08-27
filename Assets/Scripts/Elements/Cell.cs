@@ -37,6 +37,7 @@ namespace Hexic.Elements
 
         public virtual void OnExplode()
         {
+            GameController._instance.AddScore(GameController._instance.explosionPoints);
             StartCoroutine( ExplosionCoroutine());
         }
 

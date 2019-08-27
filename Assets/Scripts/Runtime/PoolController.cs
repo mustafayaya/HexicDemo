@@ -36,7 +36,7 @@ public class PoolController : MonoBehaviour
             if (cellPool.ContainsKey(CellType.Hexagon))
             {
                 var queue = cellPool[CellType.Hexagon];
-                for (int i = 0; i < GridController._instance.gridSize.x * GridController._instance.gridSize.y + GridController._instance.gridSize.x; i++) //Grid'deki toplam hücre sayısı kadar + bir rowdaki yatay hücre sayısı kadar hücre poolla
+                for (int i = 0; i < GridController._instance.gridSize.x * GridController._instance.gridSize.y * 2; i++) //Grid'deki toplam hücre sayısının iki katı kadar obje poolla
                 {
                     GameObject go = (GameObject)GameObject.Instantiate(GridController._instance.hexagonPrefab, GridController._instance.gridRectTransform.transform);
                     var _cell = go.GetComponent<Hexagon>();
@@ -60,8 +60,12 @@ public class PoolController : MonoBehaviour
         {
 
                     var _hex = (Hexagon)cellPool[CellType.Hexagon].Dequeue();
-                    _hex.color = color;
-                    _hex.OnReuse();
+                      cellPool[CellType.Hexagon].Enqueue(_hex);
+
+                      _hex.color = color;
+                      _hex.gridCoordinates = _gridCoordinates;
+
+                     _hex.OnReuse();
                     return _hex;
 
         }

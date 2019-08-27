@@ -44,27 +44,44 @@ namespace Hexic.Models
             var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
             var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
 
-            if (_h1.color == _h2.color && _h1.color == h3.color && _h2.color == _h3.color)
+            if (_h1.color.Equals(_h2.color) && _h1.color.Equals(_h3.color) && _h2.color.Equals(_h3.color))
             {
                 _h1.image.color = Color.grey;
                 _h2.image.color = Color.grey;
                 _h3.image.color = Color.grey;
-
                 return true;
             }
+
             return false;
         }
 
-        public bool DequeueTrios()
+
+        public bool DequeueHexagons()
         {
-            var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
-            var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];
-            var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];
+            if (GridController._instance.gridCellData.ContainsKey(h1GridCoordinates))
+            {
+                var _h1 = (Hexagon)GridController._instance.gridCellData[h1GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(h1GridCoordinates);
+                _h1.OnExplode();
 
-            _h1.OnExplode();
-            _h2.OnExplode();
-            _h3.OnExplode();
 
+            }
+            if (GridController._instance.gridCellData.ContainsKey(h2GridCoordinates))
+            {
+                var _h2 = (Hexagon)GridController._instance.gridCellData[h2GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(h2GridCoordinates);
+                _h2.OnExplode();
+
+
+            }
+            if (GridController._instance.gridCellData.ContainsKey(h3GridCoordinates))
+            {
+                var _h3 = (Hexagon)GridController._instance.gridCellData[h3GridCoordinates];//Get cells from grid data
+                GridController._instance.gridCellData.Remove(h3GridCoordinates);
+                _h3.OnExplode();
+
+
+            }
 
             return true;
         }
@@ -81,7 +98,6 @@ namespace Hexic.Models
             _h1.interactable = false;
             _h2.interactable = false;
             _h3.interactable = false;
-            GameController._instance.interactable = false;
 
             var startingPos = _h1.transform.position;
             var startingPos2 = _h2.transform.position;
@@ -108,7 +124,6 @@ namespace Hexic.Models
             _h1.interactable = true;
             _h2.interactable = true;
             _h3.interactable = true;
-            GameController._instance.interactable = true;
 
         }
 

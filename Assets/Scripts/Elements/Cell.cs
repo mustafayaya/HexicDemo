@@ -20,9 +20,42 @@ namespace Hexic.Elements
             gameObject.SetActive(true);
         }
 
+        public virtual void Translate(Vector2 position)
+        {
+
+                GetComponent<RectTransform>().localPosition = position;
+                return;
+
+        }
+
+        public virtual void Translate(Vector2 startPosition, Vector2 targetPosition)
+        {
+            GetComponent<RectTransform>().localPosition = startPosition;
+            StartCoroutine(PositionTransition(targetPosition));
+        }
+
+
         public virtual void OnExplode()
         {
             StartCoroutine( ExplosionCoroutine());
+        }
+
+        IEnumerator PositionTransition(Vector2 position)
+        {
+            var elapsedTime = 0f;
+            var animationTime = 2;
+            var startPosition = GetComponent<RectTransform>().localPosition;
+
+            while (elapsedTime < animationTime)
+            {
+                GetComponent<RectTransform>().localPosition = Vector2.Lerp(startPosition,position,elapsedTime/animationTime);
+
+                elapsedTime += GameController._instance.swipeAnimationSpeed * Time.deltaTime;
+                yield return new WaitForSeconds(0.01f);
+            }
+
+            GetComponent<RectTransform>().localPosition = position;
+
         }
 
         IEnumerator ExplosionCoroutine()
